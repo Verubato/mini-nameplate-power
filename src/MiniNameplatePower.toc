@@ -7,6 +7,8 @@
 ## SavedVariables: MiniNameplatePowerDB
 ## X-Curse-Project-ID: TODO
 
+Libs\LibStub\LibStub.lua
+Libs\LibCustomGlow-1.0\LibCustomGlow-1.0.lua
 MiniFramework.lua
 Config.lua
 MiniNameplatePower.lua

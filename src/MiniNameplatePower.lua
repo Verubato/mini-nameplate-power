@@ -1,10 +1,12 @@
 local addonName, addon = ...
 ---@type MiniFramework
 local mini = addon.Framework
+local LCG = LibStub("LibCustomGlow-1.0")
 local eventFrame
 local runicPowerBar
 local runicPowerText
 local runicPowerMarker
+local stepCurve
 ---@type Db
 local db
 
@@ -89,6 +91,12 @@ local function UpdateMarker(max)
 	end
 end
 
+local function UpdateGlow()
+	LCG.ProcGlow_Start(runicPowerBar, { startAnim = false })
+	local alpha = UnitPowerPercent("player", Enum.PowerType.RunicPower, false, stepCurve)
+	runicPowerBar._ProcGlow:SetAlpha(alpha)
+end
+
 local function UpdateBar()
 	local cur, max = GetRunicPower()
 	runicPowerBar:SetMinMaxValues(0, max)
@@ -119,18 +127,21 @@ local function OnEvent(_, event, unit)
 	if event == "UNIT_POWER_UPDATE" or event == "UNIT_DISPLAYPOWER" then
 		if unit == "player" then
 			UpdateBar()
+			UpdateGlow()
 		end
 		return
 	end
 
 	if event == "PLAYER_TARGET_CHANGED" then
 		UpdateNameplateAnchor()
+		UpdateGlow()
 		return
 	end
 
 	if event == "NAME_PLATE_UNIT_ADDED" then
 		if UnitIsUnit(unit, "target") then
 			UpdateNameplateAnchor()
+			UpdateGlow()
 		end
 		return
 	end
@@ -145,6 +156,7 @@ local function OnEvent(_, event, unit)
 	-- PLAYER_ENTERING_WORLD
 	UpdateBar()
 	UpdateNameplateAnchor()
+	UpdateGlow()
 end
 
 local function Init()
@@ -155,10 +167,16 @@ local function Init()
 	addon.Config:Init()
 	db = mini:GetSavedVars()
 
+	stepCurve = C_CurveUtil.CreateCurve()
+	stepCurve:AddPoint(0, 0)
+	stepCurve:AddPoint(1, 1)
+	stepCurve:SetType(Enum.LuaCurveType.Step)
+
 	runicPowerBar, runicPowerText, runicPowerMarker = CreateRunicPowerBar()
 
 	UpdateBar()
 	UpdateNameplateAnchor()
+	UpdateGlow()
 
 	eventFrame = CreateFrame("Frame")
 	eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -173,6 +191,7 @@ end
 function addon:Refresh()
 	UpdateBar()
 	UpdateNameplateAnchor()
+	UpdateGlow()
 end
 
 mini:WaitForAddonLoad(Init)
