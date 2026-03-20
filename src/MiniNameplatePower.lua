@@ -7,6 +7,7 @@ local runicPowerBar
 local runicPowerText
 local runicPowerMarker
 local stepCurve
+local colorCurve
 ---@type Db
 local db
 
@@ -103,6 +104,9 @@ local function UpdateBar()
 	runicPowerBar:SetValue(cur)
 	UpdateMarker(max)
 
+	local color = UnitPowerPercent("player", Enum.PowerType.RunicPower, false, colorCurve)
+	runicPowerBar:GetStatusBarTexture():SetVertexColor(color:GetRGB())
+
 	if db.ShowText then
 		runicPowerText:Show()
 		runicPowerText:SetText(cur)
@@ -171,6 +175,11 @@ local function Init()
 	stepCurve:AddPoint(0, 0)
 	stepCurve:AddPoint(1, 1)
 	stepCurve:SetType(Enum.LuaCurveType.Step)
+
+	colorCurve = C_CurveUtil.CreateColorCurve()
+	colorCurve:AddPoint(0, CreateColor(0.0, 0.75, 1.0, 1.0))
+	colorCurve:AddPoint(1, CreateColor(1.0, 0.0, 0.0, 1.0))
+	colorCurve:SetType(Enum.LuaCurveType.Step)
 
 	runicPowerBar, runicPowerText, runicPowerMarker = CreateRunicPowerBar()
 
