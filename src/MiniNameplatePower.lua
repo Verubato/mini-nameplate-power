@@ -4,6 +4,7 @@ local mini = addon.Framework
 local eventFrame
 local runicPowerBar
 local runicPowerText
+local runicPowerMarker
 ---@type Db
 local db
 
@@ -42,11 +43,30 @@ local function CreateRunicPowerBar()
 	text:SetPoint("CENTER", bar, "CENTER", 0, 0)
 	text:SetText("0")
 
+	local marker = bar:CreateTexture(nil, "OVERLAY")
+	marker:SetTexture("Interface\\Buttons\\WHITE8X8")
+	marker:SetVertexColor(1, 1, 1, 0.8)
+	marker:SetWidth(1)
+
+	local currentMax = 100
+
+	bar.SetCurrentMax = function(max)
+		currentMax = max
+	end
+
+	bar:SetScript("OnSizeChanged", function(self, width)
+		if currentMax > 0 and width > 0 then
+			marker:ClearAllPoints()
+			marker:SetPoint("TOP", bar, "TOPLEFT", width * (30 / currentMax), 0)
+			marker:SetPoint("BOTTOM", bar, "BOTTOMLEFT", width * (30 / currentMax), 0)
+		end
+	end)
+
 	AddBlackOutline(bar)
 
 	bar:Hide()
 
-	return bar, text
+	return bar, text, marker
 end
 
 local function GetRunicPower()
@@ -59,10 +79,21 @@ local function GetRunicPower()
 	return cur or 0, max
 end
 
+local function UpdateMarker(max)
+	runicPowerBar.SetCurrentMax(max)
+	local width = runicPowerBar:GetWidth()
+	if width > 0 and max > 0 then
+		runicPowerMarker:ClearAllPoints()
+		runicPowerMarker:SetPoint("TOP", runicPowerBar, "TOPLEFT", width * (30 / max), 0)
+		runicPowerMarker:SetPoint("BOTTOM", runicPowerBar, "BOTTOMLEFT", width * (30 / max), 0)
+	end
+end
+
 local function UpdateBar()
 	local cur, max = GetRunicPower()
 	runicPowerBar:SetMinMaxValues(0, max)
 	runicPowerBar:SetValue(cur)
+	UpdateMarker(max)
 
 	if db.ShowText then
 		runicPowerText:Show()
@@ -124,7 +155,7 @@ local function Init()
 	addon.Config:Init()
 	db = mini:GetSavedVars()
 
-	runicPowerBar, runicPowerText = CreateRunicPowerBar()
+	runicPowerBar, runicPowerText, runicPowerMarker = CreateRunicPowerBar()
 
 	UpdateBar()
 	UpdateNameplateAnchor()
