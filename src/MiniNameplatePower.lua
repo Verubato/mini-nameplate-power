@@ -178,6 +178,7 @@ local function Init()
 
 	colorCurve = C_CurveUtil.CreateColorCurve()
 	colorCurve:AddPoint(0, CreateColor(0.0, 0.75, 1.0, 1.0))
+	colorCurve:AddPoint(0.8, CreateColor(1.0, 0.0, 0.0, 1.0))
 	colorCurve:AddPoint(1, CreateColor(1.0, 0.0, 0.0, 1.0))
 	colorCurve:SetType(Enum.LuaCurveType.Step)
 
