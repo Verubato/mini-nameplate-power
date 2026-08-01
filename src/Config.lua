@@ -36,14 +36,12 @@ function M:Init()
 	local columns = 4
 	local columnWidth = mini:ColumnWidth(columns, 0, 0)
 
-	local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
-	local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	title:SetPoint("TOPLEFT", 0, -verticalSpacing)
-	title:SetText(string.format("%s - %s", addonName, version))
-
-	local subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontWhite")
-	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-	subtitle:SetText("Runic power tracker on target nameplate.")
+	local header = mini:PanelHeader({
+		Parent = panel,
+		Description = "Runic power tracker on target nameplate.",
+		Y = -verticalSpacing,
+		Gap = 6,
+	})
 
 	mini:RegisterSlashCommand(category, panel, {
 		"/mininameplatepower",
@@ -63,7 +61,7 @@ function M:Init()
 		end,
 	})
 
-	showText:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -verticalSpacing)
+	showText:SetPoint("TOPLEFT", header.Anchor, "BOTTOMLEFT", 0, -verticalSpacing)
 
 	local sliderWidth = (columns / 2 * columnWidth) - horizontalSpacing
 	local rpWidthSlider = mini:Slider({
