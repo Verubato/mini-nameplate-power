@@ -39,7 +39,6 @@ function M:Init()
 	local header = mini:PanelHeader({
 		Parent = panel,
 		Description = "Runic power tracker on target nameplate.",
-		Y = -verticalSpacing,
 		Gap = 6,
 	})
 
