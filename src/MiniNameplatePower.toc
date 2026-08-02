@@ -1,4 +1,4 @@
-## Interface: 120001, 120000, 110207, 50503, 40402, 38000, 30405
+## Interface: 120001, 120000, 110207, 50504, 40402, 38000, 30405
 ## Title: MiniNameplatePower
 ## Notes: Tracks runic power on the targeted nameplate.
 ## Author: Verz
