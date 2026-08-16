@@ -1,6 +1,7 @@
 ## Interface: 120100, 50504, 40402, 38002, 38000, 30405
 ## Title: MiniNameplatePower
 ## Notes: Tracks runic power on the targeted nameplate.
+## Category: Mini
 ## Author: Verz
 ## Version: 0.0.5
 ## IconTexture: Interface\AddOns\MiniNameplatePower\Icon.blp
