@@ -3,7 +3,7 @@
 ## Notes: Tracks runic power on the targeted nameplate.
 ## Category: Mini
 ## Author: Verz
-## Version: 0.0.5
+## Version: 0.0.6
 ## IconTexture: Interface\AddOns\MiniNameplatePower\Icon.blp
 ## SavedVariables: MiniNameplatePowerDB
 ## X-Curse-Project-ID: TODO
