@@ -8,6 +8,12 @@ local runicPowerText
 local runicPowerMarker
 local stepCurve
 local colorCurve
+-- The max the marker is currently placed for. A width change re-anchors it through the bar's
+-- own OnSizeChanged, so max is the only thing left to watch.
+local markerMax
+-- The bar width the glow overlay was last built for. LCG works its insets out from the width
+-- at start time, so it has to be restarted when that moves, but not on every power tick.
+local glowWidth
 ---@type Db
 local db
 
@@ -83,19 +89,43 @@ local function GetRunicPower()
 end
 
 local function UpdateMarker(max)
+	if markerMax == max then
+		return
+	end
+
 	runicPowerBar.SetCurrentMax(max)
 	local width = runicPowerBar:GetWidth()
 	if width > 0 and max > 0 then
 		runicPowerMarker:ClearAllPoints()
 		runicPowerMarker:SetPoint("TOP", runicPowerBar, "TOPLEFT", width * (30 / max), 0)
 		runicPowerMarker:SetPoint("BOTTOM", runicPowerBar, "BOTTOMLEFT", width * (30 / max), 0)
+		-- Only recorded once it was actually placed, so a bar with no width yet is retried.
+		markerMax = max
 	end
 end
 
 local function UpdateGlow()
-	LCG.ProcGlow_Start(runicPowerBar, { startAnim = false })
-	local alpha = UnitPowerPercent("player", Enum.PowerType.RunicPower, false, stepCurve)
-	runicPowerBar._ProcGlow:SetAlpha(alpha)
+	local width = runicPowerBar:GetWidth()
+
+	-- Nothing to anchor to yet; whatever sizes the bar comes back through here.
+	if not width or width <= 0 then
+		return
+	end
+
+	-- Restarted when the width moves, and when another addon has released the overlay from
+	-- LCG's pool, which clears the field.
+	if glowWidth ~= width or not runicPowerBar._ProcGlow then
+		LCG.ProcGlow_Start(runicPowerBar, { startAnim = false })
+		glowWidth = width
+	end
+
+	local glow = runicPowerBar._ProcGlow
+
+	if not glow then
+		return
+	end
+
+	glow:SetAlpha(UnitPowerPercent("player", Enum.PowerType.RunicPower, false, stepCurve))
 end
 
 local function UpdateBar()
@@ -127,17 +157,27 @@ local function UpdateNameplateAnchor()
 	end
 end
 
-local function OnEvent(_, event, unit)
+local function OnEvent(_, event, unit, powerType)
 	if event == "UNIT_POWER_UPDATE" or event == "UNIT_DISPLAYPOWER" then
-		if unit == "player" then
-			UpdateBar()
-			UpdateGlow()
+		-- UNIT_POWER_UPDATE covers every power type the player has, and only runic power is
+		-- drawn here. UNIT_DISPLAYPOWER carries no type and always matters.
+		if event == "UNIT_POWER_UPDATE" and powerType ~= "RUNIC_POWER" then
+			return
 		end
+
+		-- Nothing to draw while the bar is hidden. Whatever shows it again redraws it.
+		if not runicPowerBar:IsShown() then
+			return
+		end
+
+		UpdateBar()
+		UpdateGlow()
 		return
 	end
 
 	if event == "PLAYER_TARGET_CHANGED" then
 		UpdateNameplateAnchor()
+		UpdateBar()
 		UpdateGlow()
 		return
 	end
@@ -145,6 +185,7 @@ local function OnEvent(_, event, unit)
 	if event == "NAME_PLATE_UNIT_ADDED" then
 		if UnitIsUnit(unit, "target") then
 			UpdateNameplateAnchor()
+			UpdateBar()
 			UpdateGlow()
 		end
 		return
@@ -190,8 +231,9 @@ local function Init()
 
 	eventFrame = CreateFrame("Frame")
 	eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-	eventFrame:RegisterEvent("UNIT_POWER_UPDATE")
-	eventFrame:RegisterEvent("UNIT_DISPLAYPOWER")
+	-- Unit filtered, or every nearby unit's power ticks land here too.
+	eventFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "player")
+	eventFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player")
 	eventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 	eventFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 	eventFrame:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
