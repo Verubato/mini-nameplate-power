@@ -20,6 +20,9 @@ local M = {
 addon.Config = M
 
 function M:Init()
+	-- A styled button clashes with the stock Blizzard art around it in the settings screen.
+	mini:SetCustomStyling(true, { Button = false })
+
 	db = mini:GetSavedVars(dbDefaults)
 
 	local panel = CreateFrame("Frame")
@@ -62,6 +65,13 @@ function M:Init()
 
 	showText:SetPoint("TOPLEFT", header.Anchor, "BOTTOMLEFT", 0, -verticalSpacing)
 
+	local appearanceDivider = mini:Divider({
+		Parent = panel,
+		Text = "Appearance",
+	})
+	appearanceDivider:SetPoint("TOPLEFT", showText, "BOTTOMLEFT", 0, -verticalSpacing)
+	appearanceDivider:SetPoint("RIGHT", panel, "RIGHT", 0, 0)
+
 	local sliderWidth = (columns / 2 * columnWidth) - horizontalSpacing
 	local rpWidthSlider = mini:Slider({
 		Parent = panel,
@@ -79,7 +89,7 @@ function M:Init()
 		end,
 	})
 
-	rpWidthSlider.Slider:SetPoint("TOPLEFT", showText, "BOTTOMLEFT", 0, -verticalSpacing * 3)
+	rpWidthSlider.Slider:SetPoint("TOPLEFT", appearanceDivider, "BOTTOMLEFT", 0, -verticalSpacing * 2)
 
 	local rpHeightSlider = mini:Slider({
 		Parent = panel,
